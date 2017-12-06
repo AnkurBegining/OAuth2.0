@@ -6,6 +6,7 @@ from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Restaurant, MenuItem
 
+# Step -1
 # New imports for this step
 from flask import session as login_session
 import random
@@ -19,6 +20,7 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 
+# Step -1
 # Create anti-forgery state token
 @app.route('/login')
 def showLogin():
