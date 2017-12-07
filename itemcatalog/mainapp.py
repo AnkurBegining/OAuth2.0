@@ -191,6 +191,27 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+# JSON APIs to view Categories Information
+@app.route('/categories/<int:category_id>/item/JSON')
+def categoriesJSON(category_id):
+    category = session.query(Category).filter_by(id=category_id).one()
+    items = session.query(Items).filter_by(category_id=category_id).all()
+    return jsonify(Items=[i.serialize for i in items])
+
+@app.route('/categories/<int:category_id>/item/<int:item_id>/JSON')
+def categoryItemJSON(category_id, item_id):
+    Category_Item = session.query(Items).filter_by(id=item_id).one()
+    return jsonify(Menu_Item=Category_Item.serialize)
+
+@app.route('/categories/JSON')
+def categoryJSON():
+    category = session.query(Category).all()
+    return jsonify(category=[r.serialize for r in category])
+
+
+
+
+
 
 # Show all Categories
 @app.route('/')
@@ -239,7 +260,7 @@ def editCategories(category_id):
 
 # Delete a Categories
 @app.route('/categories/<int:category_id>/delete/', methods=['GET', 'POST'])
-def deleteRestaurant(category_id):
+def deleteCategories(category_id):
     if 'username' not in login_session:
         return redirect('/login')
     categoryToDelete = session.query(Category).filter_by(id=category_id).one()
@@ -256,6 +277,90 @@ def deleteRestaurant(category_id):
         return redirect(url_for('showCategories', category_id=category_id))
     else:
         return render_template('deleteCategory.html', category=categoryToDelete)
+
+# Show a category item
+@app.route('/categories/<int:category_id>/')
+@app.route('/categories/<int:category_id>/item/')
+def showItem(category_id):
+    category = session.query(Category).filter_by(id=category_id).one()
+    items = session.query(Items).filter_by(category_id=category_id).all()
+    creator = getUserInfo(category.user_id)
+    if 'username' not in login_session or creator.id != login_session['user_id']:
+        return render_template('item.html', items=items, category=category, creator=creator)
+    else:
+        return render_template('item.html', items=items, category=category, creator=creator)
+
+
+# Create a new item
+@app.route('/categories/<int:category_id>/item/new/', methods=['GET', 'POST'])
+def newItem(category_id):
+    if 'username' not in login_session:
+        return redirect('/login')
+    category = session.query(Category).filter_by(id=category_id).one()
+    if request.method == 'POST':
+        newItem = Items(name=request.form['name'],
+                        description=request.form['description'],
+                        category_id=category_id, user_id=category.user_id)
+        session.add(newItem)
+        session.commit()
+        flash('New Menu %s Item Successfully Created' % (newItem.name))
+        return redirect(url_for('showItem', category_id=category_id))
+    else:
+        return render_template('newitem.html', category_id=category_id)
+
+# Edit a menu item
+@app.route('/categories/<int:category_id>/item/<int:item_id>/edit', methods=['GET', 'POST'])
+def editItem(category_id, item_id):
+    if 'username' not in login_session:
+        return redirect('/login')
+    editedItem = session.query(Items).filter_by(id=item_id).one()
+    category = session.query(Category).filter_by(id=category_id).one()
+    if request.method == 'POST':
+        if request.form['name']:
+            editedItem.name = request.form['name']
+        if request.form['description']:
+            editedItem.description = request.form['description']
+
+        session.add(editedItem)
+        session.commit()
+        flash('Item Successfully Edited')
+        return redirect(url_for('showMenu', category_id=category_id))
+    else:
+        return render_template('editmenuitem.html', category_id=category_id, item_id=item_id, item=editedItem)
+
+# Delete a menu item
+@app.route('/categories/<int:category_id>/item/<int:item_id>/delete', methods=['GET', 'POST'])
+def deleteItem(category_id, item_id):
+    if 'username' not in login_session:
+        return redirect('/login')
+    category = session.query(Category).filter_by(id=category_id).one()
+    itemToDelete = session.query(Items).filter_by(id=item_id).one()
+
+    if login_session['user_id'] != category.user_id:
+        return "<script>function myFunction() {alert('You are not authorized to edit items to this restaurant. Please create your own restaurant in order to edit items.');}</script><body onload='myFunction()''>"
+
+    if login_session['user_id'] != category.user_id:
+        return "<script>function myFunction() {alert('You are not authorized to delete items to this restaurant. Please create your own restaurant in order to delete items.');}</script><body onload='myFunction()''>"
+    if request.method == 'POST':
+        session.delete(itemToDelete)
+        session.commit()
+        flash('Item Successfully Deleted')
+        return redirect(url_for('showItem', restaurant_id=category_id))
+    else:
+        return render_template('deleteitem.html', item=itemToDelete)
+
+    if __name__ == '__main__':
+        app.secret_key = 'super_secret_key'
+        app.debug = True
+        app.run(host='0.0.0.0', port=5000)
+
+    if request.method == 'POST':
+        session.delete(itemToDelete)
+        session.commit()
+        flash('Menu Item Successfully Deleted')
+        return redirect(url_for('showMenu', restaurant_id=category_id))
+    else:
+        return render_template('deleteMenuitem.html', item=itemToDelete)
 
 
 if __name__ == '__main__':
