@@ -362,7 +362,7 @@ def deleteMenuItem(restaurant_id, menu_id):
         flash('Menu Item Successfully Deleted')
         return redirect(url_for('showMenu', restaurant_id=restaurant_id))
     else:
-        return render_template('deleteMenuItem.html', item=itemToDelete)
+        return render_template('deleteMenuitem.html', item=itemToDelete)
 
     if __name__ == '__main__':
         app.secret_key = 'super_secret_key'
@@ -375,7 +375,7 @@ def deleteMenuItem(restaurant_id, menu_id):
         flash('Menu Item Successfully Deleted')
         return redirect(url_for('showMenu', restaurant_id=restaurant_id))
     else:
-        return render_template('deleteMenuItem.html', item=itemToDelete)
+        return render_template('deleteMenuitem.html', item=itemToDelete)
 
 
 if __name__ == '__main__':
