@@ -324,9 +324,9 @@ def editItem(category_id, item_id):
         session.add(editedItem)
         session.commit()
         flash('Item Successfully Edited')
-        return redirect(url_for('showMenu', category_id=category_id))
+        return redirect(url_for('showItem', category_id=category_id))
     else:
-        return render_template('editmenuitem.html', category_id=category_id, item_id=item_id, item=editedItem)
+        return render_template('edititem.html', category_id=category_id, item_id=item_id, item=editedItem)
 
 # Delete a menu item
 @app.route('/categories/<int:category_id>/item/<int:item_id>/delete', methods=['GET', 'POST'])

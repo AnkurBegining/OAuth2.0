@@ -23,9 +23,24 @@
         <div class="collapse navbar-collapse" id="myNavbar">
 
             <ul class="nav navbar-nav navbar-right">
-                <li>
-                    <a href="{{ url_for('showLogin') }}"><span class="glyphicon glyphicon-log-in"></span> Login</a>
-                </li>
+
+                {% if 'username' not in login_session %}
+
+                    <li class="">
+                        <a href="{{ url_for('gdisconnect') }}">
+                            <span class="glyphicon glyphicon-log-in" aria-hidden="true"></span>&nbsp;
+                            <button class="btn btn-primary">LOGOUT</button>
+                        </a>
+                    </li>
+
+                {% else  %}
+                     <li class="">
+                        <a href="{{ url_for('showLogin') }}">
+                            <span class="glyphicon glyphicon-log-in" aria-hidden="true"></span>&nbsp;
+                            <button class="btn btn-primary">LOGIN</button>
+                        </a>
+                     </li>
+                {% endif %}
             </ul>
         </div>
     </div>
