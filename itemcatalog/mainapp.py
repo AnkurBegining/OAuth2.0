@@ -197,11 +197,16 @@ def gdisconnect():
 @app.route('/categories/')
 def showCategories():
     categories = session.query(Category).order_by(asc(Category.name))
-    return render_template('main.html', categories=categories)
+    if 'username' not in login_session:
+        return render_template('publicmain.html', categories=categories)
+    else:
+        return render_template('main.html', categories=categories)
 
 # Create a new Categories
 @app.route('/categories/new/', methods=['GET', 'POST'])
 def newCategories():
+    if 'username' not in login_session:
+        return redirect('/login')
     if request.method == 'POST':
         newCategory = Category(name=request.form['name'],user_id=login_session['user_id'])
         session.add(newCategory)
@@ -210,6 +215,47 @@ def newCategories():
         return redirect(url_for('showCategories'))
     else:
         return render_template('newCategories.html')
+
+
+# Edit a Categories
+@app.route('/categories/<int:category_id>/edit/', methods=['GET', 'POST'])
+def editCategories(category_id):
+    if 'username' not in login_session:
+        return redirect('/login')
+    editedCategory = session.query(Category).filter_by(id=category_id).one()
+    if editedCategory.user_id != login_session['user_id']:
+        return "<script>" \
+               "function myFunction() " \
+               "{alert('You are not authorized to edit this restaurant. " \
+               "Please create your own restaurant in order to edit.');}" \
+               "</script><body onload='myFunction()''>"
+    if request.method == 'POST':
+        if request.form['name']:
+            editedCategory.name = request.form['name']
+            flash('Restaurant Successfully Edited %s' % editedCategory.name)
+            return redirect(url_for('showCategories'))
+    else:
+        return render_template('editCategory.html', category=editedCategory)
+
+# Delete a Categories
+@app.route('/categories/<int:category_id>/delete/', methods=['GET', 'POST'])
+def deleteRestaurant(category_id):
+    if 'username' not in login_session:
+        return redirect('/login')
+    categoryToDelete = session.query(Category).filter_by(id=category_id).one()
+    if categoryToDelete.user_id != login_session['user_id']:
+        return "<script>" \
+               "function myFunction() " \
+               "{alert('You are not authorized to delete this restaurant. " \
+               "Please create your own restaurant in order to delete.');}</script>" \
+               "<body onload='myFunction()''>"
+    if request.method == 'POST':
+        session.delete(categoryToDelete)
+        flash('%s Successfully Deleted' % categoryToDelete.name)
+        session.commit()
+        return redirect(url_for('showCategories', category_id=category_id))
+    else:
+        return render_template('deleteCategory.html', category=categoryToDelete)
 
 
 if __name__ == '__main__':
