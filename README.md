@@ -1,3 +1,39 @@
+# This is the OAuth2.0 repo of Udacity. I have made my Item Catalog in this repository only.
+This Repo contain my Udacity project i.e Item Catalog. For Installing the basic requirement kindly follow the Step which Udacity mentioned below my instructions
+
+# How to run my flask based webapp
+
+#### Step1 (clone into your local):
+Run the following command in your terminal
+
+    '''
+    git clone  https://github.com/AnkurBegining/OAuth2.0
+    '''
+
+#### Step2 (Run following command by terminal):
+    
+    '''
+    cd itemcatalog
+    vagrant up
+    vagrant ssh
+    cd /vagrant
+    '''
+
+#### Step3 (change directory):
+
+    '''
+    ls
+    cd itemcatalog
+    python mainapp.py
+    '''
+    
+#### Step4 (I have changed the default port number):
+Kindly open the following address after running mainapp.py file i.e. http://localhost:5001/
+For running my webapp are opening 5001 port not 5000.
+
+# Please follow the loved udacity below instruction for working properly
+
+
 # OAuth2.0
 Starter Code for Auth&amp;Auth course
 # Installing the Vagrant VM for ud330 - Authentication & Authorization
