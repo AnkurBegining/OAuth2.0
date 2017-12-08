@@ -1,7 +1,5 @@
 from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
 
-app = Flask(__name__)
-
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Category, Items, User
@@ -19,6 +17,8 @@ import httplib2
 import json
 from flask import make_response
 import requests
+
+app = Flask(__name__)
 
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
@@ -247,13 +247,13 @@ def editCategories(category_id):
     if editedCategory.user_id != login_session['user_id']:
         return "<script>" \
                "function myFunction() " \
-               "{alert('You are not authorized to edit this restaurant. " \
-               "Please create your own restaurant in order to edit.');}" \
+               "{alert('You are not authorized to edit this category. " \
+               "Please create your own category in order to edit.');}" \
                "</script><body onload='myFunction()''>"
     if request.method == 'POST':
         if request.form['name']:
             editedCategory.name = request.form['name']
-            flash('Restaurant Successfully Edited %s' % editedCategory.name)
+            flash('category Successfully Edited %s' % editedCategory.name)
             return redirect(url_for('showCategories'))
     else:
         return render_template('editCategory.html', category=editedCategory)
@@ -267,8 +267,8 @@ def deleteCategories(category_id):
     if categoryToDelete.user_id != login_session['user_id']:
         return "<script>" \
                "function myFunction() " \
-               "{alert('You are not authorized to delete this restaurant. " \
-               "Please create your own restaurant in order to delete.');}</script>" \
+               "{alert('You are not authorized to delete this category. " \
+               "Please create your own category in order to delete.');}</script>" \
                "<body onload='myFunction()''>"
     if request.method == 'POST':
         session.delete(categoryToDelete)
@@ -315,6 +315,12 @@ def editItem(category_id, item_id):
         return redirect('/login')
     editedItem = session.query(Items).filter_by(id=item_id).one()
     category = session.query(Category).filter_by(id=category_id).one()
+    if login_session['user_id'] != category.user_id:
+        return "<script>function myFunction() " \
+               "{alert('You are not authorized to edit items to this category. " \
+               "Please create your own category in order to edit items.');}" \
+               "</script><body onload='myFunction()''>"
+
     if request.method == 'POST':
         if request.form['name']:
             editedItem.name = request.form['name']
@@ -336,31 +342,21 @@ def deleteItem(category_id, item_id):
     category = session.query(Category).filter_by(id=category_id).one()
     itemToDelete = session.query(Items).filter_by(id=item_id).one()
 
-    if login_session['user_id'] != category.user_id:
-        return "<script>function myFunction() {alert('You are not authorized to edit items to this restaurant. Please create your own restaurant in order to edit items.');}</script><body onload='myFunction()''>"
+
 
     if login_session['user_id'] != category.user_id:
-        return "<script>function myFunction() {alert('You are not authorized to delete items to this restaurant. Please create your own restaurant in order to delete items.');}</script><body onload='myFunction()''>"
+        return "<script>function myFunction()" \
+               " {alert('You are not authorized to delete items to this category." \
+               " Please create your own category in order to delete items.');}" \
+               "</script><body onload='myFunction()''>"
     if request.method == 'POST':
         session.delete(itemToDelete)
         session.commit()
         flash('Item Successfully Deleted')
-        return redirect(url_for('showItem', restaurant_id=category_id))
+        return redirect(url_for('showItem', category_id=category_id))
     else:
         return render_template('deleteitem.html', item=itemToDelete)
 
-    if __name__ == '__main__':
-        app.secret_key = 'super_secret_key'
-        app.debug = True
-        app.run(host='0.0.0.0', port=5000)
-
-    if request.method == 'POST':
-        session.delete(itemToDelete)
-        session.commit()
-        flash('Menu Item Successfully Deleted')
-        return redirect(url_for('showMenu', restaurant_id=category_id))
-    else:
-        return render_template('deleteMenuitem.html', item=itemToDelete)
 
 
 if __name__ == '__main__':
